@@ -1,0 +1,27 @@
+{
+  "name": "Lavanda_hash_Code_2018",
+  "version": "1.0.0",
+  "description": "Lavanda_hash_Code_2018",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/radiosource/lavanda_hash_code_2018"
+  },
+  "author": {
+    "name": "Oleh Zahnitko",
+    "email": "oleh.zahnitko@ria.com"
+  },
+  "dependencies": {
+    "brainjs": "^0.7.4",
+    "lodash": "^4.17.5",
+    "q": "^1.5.1"
+  },
+  "scripts": {
+    "index": "node --harmony --max-old-space-size=4096 ./index.js",
+    "parser": "node --harmony --max-old-space-size=4096 ./parser.js",
+    "train": "node --harmony --max-old-space-size=4096 ./train.js"
+  },
+  "engines": {
+    "node": ">=7.6.x"
+  }
+}
