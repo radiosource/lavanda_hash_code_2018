@@ -7,8 +7,10 @@ const
 (async() => {
   //const net =require('./net');
   let names = ['a_example.json', 'b_should_be_easy.json', 'c_no_hurry.json', 'd_metropolis.json', 'e_high_bonus.json'];
+  //names = [names[0]]
   names.map(go);
   function go(name) {
+    var STEP = 0;
     let {global, rides}=require('./parsed/' + name);
     let autos = [];
     for (let index = 0; index < global.vehicles; index++) {
@@ -26,11 +28,12 @@ const
       rides[i].distance = getDistance(ride.xStart, ride.yStart, ride.xFinish, ride.yFinish);
     }
 
-    let sortedRides = _.sortBy(rides, function (o) {
-      return o.distance * -1
-    });
+    // let sortedRides = _.sortBy(rides, function (o) {
+    //   return o.distance * -1
+    // });
 
-    for (let STEP = 0; STEP < global.totalSteps; STEP++) {
+    for (let step = 0; step < global.totalSteps; step++) {
+      STEP = step;
       setRides();
       run();
     }
@@ -55,6 +58,9 @@ const
       for (let auto of _.filter(autos, function (a) {
         return a.ride > -1;
       })) {
+        let ride = rides[auto.ride];
+        auto.x = ride.xFinish;
+        auto.y = ride.yFinish;
         auto.step -= 1;
         if (!auto.step) {
           auto.finishedRides.push(auto.ride);
@@ -65,14 +71,32 @@ const
 
     function setRides() {
       for (let auto of _.filter(autos, {ride: -1})) {
-        if (sortedRides.length) {
-          let autoRide = sortedRides.shift();
+
+        console.log("====> _.filter(rides, {inWay: 0})", _.filter(rides, {inWay: 0}).length)
+        for (let ride of _.filter(rides, {inWay: 0})) {
+          //let autoRide = sortedRides.shift();
+          let distanceToStart = getDistance(auto.x, auto.y, ride.xStart, ride.yStart);
+          let distanceFromStartToFinish = ride.distance;
+          let bonus = ride.startStep <= (STEP + distanceToStart) ? global.bonus : 0;
+          ride.distanceToStart = distanceToStart;
+          ride.score = distanceFromStartToFinish + bonus;
+        }
+
+        let sortedRides = _.sortBy(_.filter(rides, {inWay: 0}), function (o) {
+          return o.score * -1
+        });
+
+        let autoRide = sortedRides[0];
+        if (autoRide) {
           auto.ride = rides.indexOf(autoRide);
-          auto.step = autoRide.distance;
+          console.log(auto.ride);
+          rides[auto.ride].inWay = 1;
+          auto.step = autoRide.distance + autoRide.distanceToStart + (autoRide.startStep - STEP + autoRide.distanceToStart);
         }
 
 
-        /*for (let i in _.filter(rides, {inWay: 0})) {
+////////////////////////
+        /*     for (let i in _.filter(rides, {inWay: 0})) {
          let ride = rides[i];
 
          let distance = getDistance(auto.x, auto.y, ride.xStart, ride.yStart);
