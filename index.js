@@ -7,7 +7,7 @@ const
 (async() => {
   //const net =require('./net');
   let names = ['a_example.json', 'b_should_be_easy.json', 'c_no_hurry.json', 'd_metropolis.json', 'e_high_bonus.json'];
-  names = [names[0]]
+  //names = [names[0]]
   names.map(go);
   function go(name) {
     var STEP = 0;
@@ -32,6 +32,7 @@ const
     //   return o.distance * -1
     // });
 
+
     for (let step = 0; step < global.totalSteps; step++) {
       STEP = step;
       setRides();
@@ -39,6 +40,7 @@ const
     }
 
     writeResults();
+
     console.log("FINISH " + name);
 
 
@@ -62,22 +64,28 @@ const
         auto.x = ride.xFinish;
         auto.y = ride.yFinish;
         auto.step -= 1;
-        if (!auto.step) {
-          ride.finished = 1;
+
+        if (auto.step <= 0) {
           auto.finishedRides.push(auto.ride);
           auto.ride = -1;
-          let reservedRide = _.find(rides, {reserved: autos.indexOf(auto)});
-          if (reservedRide) {
-            auto.ride = rides.indexOf(reservedRide);
-            auto.step = reservedRide.distance + reservedRide.distanceToStart + (reservedRide.startStep - STEP + reservedRide.distanceToStart);
-          }
+          rides[rides.indexOf(ride)].finished = 1
+          rides[rides.indexOf(ride)].reserved = 1
+        }
+
+        let reservedRide = rides.filter((ride) => {
+          return ride.reserved === autos.indexOf(auto) && ride.finished === 0 && rides.indexOf(ride)!==auto.ride
+        });
+
+        if (reservedRide && reservedRide.length) {
+          reservedRide = reservedRide[0];
+          auto.ride = rides.indexOf(reservedRide);
+          auto.step = reservedRide.distance + reservedRide.distanceToStart + (reservedRide.startStep - STEP + reservedRide.distanceToStart);
         }
       }
     }
 
     function setRides() {
       for (let auto of _.filter(autos, {ride: -1})) {
-        console.log("==================");
 
         for (let ride of getAvailableRide()) {
           /*@*/
@@ -95,11 +103,13 @@ const
 
         let autoRide = sortedRides[0];
         if (autoRide) {
-          autoRide.reserved = autos.indexOf(auto);
+          auto.ride = rides.indexOf(autoRide);
+          rides[auto.ride].reserved = autos.indexOf(auto);
+          auto.step = autoRide.distance + autoRide.distanceToStart + (autoRide.startStep - STEP + autoRide.distanceToStart);
         }
 
         let followingRide;
-        console.log(getAvailableRide().length);
+
         for (let ride of getAvailableRide()) {
           let distanceToRide = getDistance(auto.x, auto.y, ride.xStart, ride.yStart);
           let wait = ride.startStep - (STEP + distanceToRide);
@@ -111,42 +121,26 @@ const
           let fullDistance = distanceToRide + wait + ride.distance + distanceToNext;
           if (fullDistance <= autoRide.distanceToStart) {
             followingRide = ride;
-            ride.reserved = autos.indexOf(auto);
+            rides[rides.indexOf(ride)].reserved = autos.indexOf(auto);
             break;
           }
         }
 
         if (followingRide) {
-          console.log("auto.ride1",auto.ride);
-          console.log("auto",autos.indexOf(auto));
           auto.ride = rides.indexOf(followingRide);
           auto.step = followingRide.distance + followingRide.distanceToStart + (followingRide.startStep - STEP + followingRide.distanceToStart);
         } else if (autoRide) {
           auto.ride = rides.indexOf(autoRide);
-          console.log("auto.ride2",auto.ride);
-          console.log("auto",autos.indexOf(auto));
-
           auto.step = autoRide.distance + autoRide.distanceToStart + (autoRide.startStep - STEP + autoRide.distanceToStart);
         }
 
 
-        // auto.ride = rides.indexOf(autoRide);
-        // auto.step = autoRide.distance + autoRide.distanceToStart + (autoRide.startStep - STEP + autoRide.distanceToStart);
-
         function getAvailableRide() {
-          return _.filter(rides, {finished: 0, reserved: -1});
+          return rides.filter((ride) => {
+            return ride.finished === 0 && ride.reserved === -1
+          })
         }
 
-////////////////////////
-        /*     for (let i in _.filter(rides, {finished: 0})) {
-         let ride = rides[i];
-
-         let distance = getDistance(auto.x, auto.y, ride.xStart, ride.yStart);
-         if (distance === ride.startStep) {
-         rides[i].finished = 1;
-         auto.ride = i;
-         }
-         }*/
       }
     }
   }
