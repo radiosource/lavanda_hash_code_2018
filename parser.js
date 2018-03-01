@@ -4,9 +4,9 @@ const
     q = require('q')
     ;
 (async() => {
-  let names = ['a_example.in','b_should_be_easy.in','c_no_hurry.in','d_metropolis.in','e_high_bonus.in'];
+  let names = ['a_example.in', 'b_should_be_easy.in', 'c_no_hurry.in', 'd_metropolis.in', 'e_high_bonus.in'];
   names.map(parse)
-  function parse(name){
+  function parse(name) {
     let content = fs.readFileSync('./source/' + name, 'ASCII')
     var global, rides = [];
 
@@ -33,7 +33,8 @@ const
         yFinish: 0,
         startStep: 0,
         finishStep: 0,
-        inWay: 0
+        finished: 0,
+        reserved: -1,
       }))
     }
 
@@ -44,7 +45,7 @@ const
 
   function parseLine(array, output) {
     for (let i in output) {
-      output[i] = Number(array.shift()) || 0;
+      output[i] = Number(array.shift()) || output[i] ||0;
     }
     return output;
   }
