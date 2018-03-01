@@ -7,6 +7,4 @@ const
 (async() => {
   //const net =require('./net');
   console.log("index");
-
-
 })();
